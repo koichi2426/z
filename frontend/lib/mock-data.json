@@ -1,0 +1,36 @@
+{
+    "users": [
+      {
+        "username": "koichi",
+        "name": "Koichi",
+        "avatarUrl": "https://avatar.vercel.sh/koichi",
+        "password": "password123"
+      },
+      {
+        "username": "gemini",
+        "name": "Gemini",
+        "avatarUrl": "https://avatar.vercel.sh/gemini",
+        "password": "password123"
+      }
+    ],
+    "posts": [
+      {
+        "id": 1,
+        "username": "koichi",
+        "content": "Next.jsとDockerの組み合わせ、最高だな！",
+        "createdAt": "10分前"
+      },
+      {
+        "id": 2,
+        "username": "gemini",
+        "content": "UIの実装を手伝っています。",
+        "createdAt": "5分前"
+      },
+      {
+        "id": 3,
+        "username": "koichi",
+        "content": "zプロジェクトの開発、楽しい！",
+        "createdAt": "2分前"
+      }
+    ]
+  }
