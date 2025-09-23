@@ -1,3 +1,4 @@
+import Link from 'next/link'; // Linkをインポート
 import LoginForm from '@/components/LoginForm';
 
 export default function LoginPage() {
@@ -13,6 +14,16 @@ export default function LoginPage() {
         <div className="rounded-lg bg-black px-4 py-8 shadow sm:px-10">
           <LoginForm />
         </div>
+
+        {/* ↓ ここからが追加部分 */}
+        <div className="mt-6 text-center text-sm text-gray-400">
+          アカウントをお持ちでないですか？{' '}
+          <Link href="/signup" className="font-medium text-sky-400 hover:text-sky-300">
+            新規登録
+          </Link>
+        </div>
+        {/* ↑ ここまでが追加部分 */}
+
       </div>
     </div>
   );
