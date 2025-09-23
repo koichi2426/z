@@ -1,6 +1,6 @@
-import PostList from '@/components/PostList';
-// インポート元を lib/data から lib/posts に変更
 import { fetchPostsByUsername } from '@/lib/posts';
+import PostList from '@/components/PostList';
+import StoreInitializer from '@/components/StoreInitializer';
 import type { Post } from '@/lib/data';
 
 type UserPageProps = {
@@ -10,17 +10,15 @@ type UserPageProps = {
 };
 
 export default async function UserPage({ params }: UserPageProps) {
-  const posts: Post[] = await fetchPostsByUsername(params.username);
-  const userName = posts[0]?.user.name ?? params.username;
+  const initialPosts: Post[] = await fetchPostsByUsername(params.username);
+  const userName = initialPosts[0]?.user.name ?? params.username;
 
   return (
     <>
+      {/* ユーザーページでも、表示したい初期投稿をストアにセット */}
+      <StoreInitializer posts={initialPosts} />
       <h1 className="text-xl font-bold p-4 border-b border-slate-700">{userName}さんの投稿</h1>
-      {posts.length > 0 ? (
-        <PostList posts={posts} />
-      ) : (
-        <p className="p-4 text-slate-500">まだ投稿がありません。</p>
-      )}
+      <PostList />
     </>
   );
 }
