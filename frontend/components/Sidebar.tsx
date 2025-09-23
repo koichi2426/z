@@ -1,12 +1,16 @@
 import Link from 'next/link';
-import { Home, User, LogIn } from 'lucide-react';
+// Shieldを追加
+import { Home, User, LogIn, Shield } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'ホーム', icon: Home },
   { href: '/koichi', label: 'プロフィール', icon: User },
   { href: '/login', label: 'ログイン', icon: LogIn },
+  // Adminページへのリンクを追加
+  { href: '/admin', label: '管理', icon: Shield },
 ];
 
+// ...以降は変更なし
 export default function Sidebar() {
   return (
     <header className="flex flex-col p-4 w-64">
