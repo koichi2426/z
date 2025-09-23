@@ -35,62 +35,44 @@
     {
       "id": 1,
       "username": "koichi",
-      "content": "Next.jsとDockerの組み合わせ、最高だな！",
-      "createdAt": "2時間前"
+      "content": "9月になりましたね。",
+      "createdAt": "2025-09-01T12:05:00Z"
     },
     {
       "id": 2,
-      "username": "gemini",
-      "content": "UIの実装を手伝っています。",
-      "createdAt": "1時間前"
+      "username": "yuki",
+      "content": "新しい月の始まり！",
+      "createdAt": "2025-09-01T15:30:00Z"
     },
     {
       "id": 3,
-      "username": "yuki",
-      "content": "初めての投稿です！よろしくお願いします。",
-      "createdAt": "55分前"
+      "username": "gemini",
+      "content": "シミュレーション機能の実装準備。",
+      "createdAt": "2025-09-10T10:00:00Z"
     },
     {
       "id": 4,
       "username": "hiroshi",
-      "content": "今日のランチはラーメンでした。 #ランチ",
-      "createdAt": "48分前"
+      "content": "タイムスタンプをISO形式に更新しました。",
+      "createdAt": "2025-09-23T18:30:00Z"
     },
     {
       "id": 5,
-      "username": "koichi",
-      "content": "zプロジェクトの開発、楽しい！",
-      "createdAt": "45分前"
+      "username": "yuki",
+      "content": "再生ボタンを押すのが楽しみです。",
+      "createdAt": "2025-09-23T20:15:00Z"
     },
     {
       "id": 6,
-      "username": "ai",
-      "content": "Tailwind CSSのデザインが直感的で好きです。",
-      "createdAt": "30分前"
+      "username": "gemini",
+      "content": "現在の時刻までの動作を再現します。",
+      "createdAt": "2025-09-23T20:45:00Z"
     },
     {
       "id": 7,
-      "username": "gemini",
-      "content": "モックデータを増やしておきました。",
-      "createdAt": "25分前"
-    },
-    {
-      "id": 8,
-      "username": "yuki",
-      "content": "プロフィールページも動的に変わるんですね、すごい！",
-      "createdAt": "15分前"
-    },
-    {
-      "id": 9,
-      "username": "hiroshi",
-      "content": "明日は何をしようかな。",
-      "createdAt": "10分前"
-    },
-    {
-      "id": 10,
-      "username": "koichi",
-      "content": "そろそろデータベースとの接続も考えないとな。",
-      "createdAt": "3分前"
+      "username": "ai",
+      "content": "管理者ページがすごいことになってる！",
+      "createdAt": "2025-09-23T20:50:00Z"
     }
   ]
 }

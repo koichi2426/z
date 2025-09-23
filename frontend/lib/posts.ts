@@ -28,11 +28,15 @@ export const fetchAllPosts = async (): Promise<Post[]> => {
     return { ...post, user: userForPost };
   });
 
-  return populatedPosts.sort((a, b) => a.id < b.id ? 1 : -1);
+  // createdAtで昇順（古い順）に並べ替え
+  return populatedPosts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 };
 
 // 特定のユーザーの投稿を取得する関数
 export const fetchPostsByUsername = async (username: string): Promise<Post[]> => {
   const allPosts = await fetchAllPosts();
-  return allPosts.filter(post => post.user.username === username);
+  // ユーザーページでは新しい順にしたいので、ここで降順に並べ替え
+  return allPosts
+    .filter(post => post.user.username === username)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
