@@ -1,36 +1,96 @@
 {
-    "users": [
-      {
-        "username": "koichi",
-        "name": "Koichi",
-        "avatarUrl": "https://avatar.vercel.sh/koichi",
-        "password": "password123"
-      },
-      {
-        "username": "gemini",
-        "name": "Gemini",
-        "avatarUrl": "https://avatar.vercel.sh/gemini",
-        "password": "password123"
-      }
-    ],
-    "posts": [
-      {
-        "id": 1,
-        "username": "koichi",
-        "content": "Next.jsとDockerの組み合わせ、最高だな！",
-        "createdAt": "10分前"
-      },
-      {
-        "id": 2,
-        "username": "gemini",
-        "content": "UIの実装を手伝っています。",
-        "createdAt": "5分前"
-      },
-      {
-        "id": 3,
-        "username": "koichi",
-        "content": "zプロジェクトの開発、楽しい！",
-        "createdAt": "2分前"
-      }
-    ]
-  }
+  "users": [
+    {
+      "username": "koichi",
+      "name": "Koichi",
+      "avatarUrl": "https://avatar.vercel.sh/koichi",
+      "password": "password123"
+    },
+    {
+      "username": "gemini",
+      "name": "Gemini",
+      "avatarUrl": "https://avatar.vercel.sh/gemini",
+      "password": "password123"
+    },
+    {
+      "username": "yuki",
+      "name": "Yuki",
+      "avatarUrl": "https://avatar.vercel.sh/yuki",
+      "password": "password123"
+    },
+    {
+      "username": "hiroshi",
+      "name": "Hiroshi",
+      "avatarUrl": "https://avatar.vercel.sh/hiroshi",
+      "password": "password123"
+    },
+    {
+      "username": "ai",
+      "name": "Ai",
+      "avatarUrl": "https://avatar.vercel.sh/ai",
+      "password": "password123"
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "username": "koichi",
+      "content": "Next.jsとDockerの組み合わせ、最高だな！",
+      "createdAt": "2時間前"
+    },
+    {
+      "id": 2,
+      "username": "gemini",
+      "content": "UIの実装を手伝っています。",
+      "createdAt": "1時間前"
+    },
+    {
+      "id": 3,
+      "username": "yuki",
+      "content": "初めての投稿です！よろしくお願いします。",
+      "createdAt": "55分前"
+    },
+    {
+      "id": 4,
+      "username": "hiroshi",
+      "content": "今日のランチはラーメンでした。 #ランチ",
+      "createdAt": "48分前"
+    },
+    {
+      "id": 5,
+      "username": "koichi",
+      "content": "zプロジェクトの開発、楽しい！",
+      "createdAt": "45分前"
+    },
+    {
+      "id": 6,
+      "username": "ai",
+      "content": "Tailwind CSSのデザインが直感的で好きです。",
+      "createdAt": "30分前"
+    },
+    {
+      "id": 7,
+      "username": "gemini",
+      "content": "モックデータを増やしておきました。",
+      "createdAt": "25分前"
+    },
+    {
+      "id": 8,
+      "username": "yuki",
+      "content": "プロフィールページも動的に変わるんですね、すごい！",
+      "createdAt": "15分前"
+    },
+    {
+      "id": 9,
+      "username": "hiroshi",
+      "content": "明日は何をしようかな。",
+      "createdAt": "10分前"
+    },
+    {
+      "id": 10,
+      "username": "koichi",
+      "content": "そろそろデータベースとの接続も考えないとな。",
+      "createdAt": "3分前"
+    }
+  ]
+}
