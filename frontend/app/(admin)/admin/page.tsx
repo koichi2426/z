@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Trash2, Edit, Plus } from 'lucide-react';
-import mockData from './../../../lib/mock-data.json';
+import mockData from '../../../lib/mock-data.json';
 
 // 型定義
 type UserType = {
@@ -26,23 +26,19 @@ export default function AdminPage() {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedPostIds, setSelectedPostIds] = useState<number[]>([]);
 
-  // --- データ取得処理 ---
+  // --- データ取得処理 (修正済み) ---
   useEffect(() => {
-    // JSONファイルからデータをロード
-    // ユーザーデータを加工 (IDを付与)
-    const loadedUsers = mockData.users.map((user, index) => ({
-      id: index + 1, // 簡易的なIDを付与
-      name: user.name,
-      username: user.username,
-    }));
+    // モックデータからユーザー情報をそのままロード
+    const loadedUsers: UserType[] = mockData.users;
 
-    // 投稿データを加工 (userIdとauthorNameを追加)
-    const loadedPosts = mockData.posts.map(post => {
-      const author = loadedUsers.find(u => u.username === post.username);
+    // 投稿データに、対応するユーザー名を追加して加工
+    const loadedPosts: PostType[] = mockData.posts.map(post => {
+      // post.userIdを使ってユーザー配列から投稿者を探す
+      const author = loadedUsers.find(user => user.id === post.userId);
       return {
         id: post.id,
-        userId: author ? author.id : 0, // 見つからない場合は0
-        authorName: author ? author.name : 'Unknown User',
+        userId: post.userId,
+        authorName: author ? author.name : 'Unknown User', // 見つからない場合のフォールバック
         content: post.content,
         createdAt: post.createdAt,
       };
