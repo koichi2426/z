@@ -38,6 +38,23 @@ export default function SignupForm() {
           />
         </div>
       </div>
+      {/* --- メールアドレス入力欄を追加 --- */}
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+          メールアドレス
+        </label>
+        <div className="mt-1">
+          <input
+            id="email"
+            name="email"
+            type="email" // typeを"email"に設定
+            autoComplete="email"
+            required
+            className="w-full rounded-md border-gray-600 bg-gray-800 text-white shadow-sm focus:border-sky-500 focus:ring-sky-500"
+          />
+        </div>
+      </div>
+      {/* --- ここまで --- */}
       <div>
         <label
           htmlFor="password"
@@ -50,6 +67,7 @@ export default function SignupForm() {
             id="password"
             name="password"
             type="password"
+            autoComplete="new-password"
             required
             className="w-full rounded-md border-gray-600 bg-gray-800 text-white shadow-sm focus:border-sky-500 focus:ring-sky-500"
           />
