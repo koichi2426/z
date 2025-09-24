@@ -1,58 +1,45 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-// data.tsから型定義をインポート
-import type { User, Post } from './data';
+import mockData from './mock-data.json';
+import type { User, Post, PostWithUser } from './data';
 
-// --- JSONから読み込むデータ用の内部的な型定義 ---
-// UserWithPasswordはUser型を継承するため、idも含まれる
-type UserWithPassword = User & { password?: string };
-// JSONファイル内のpostオブジェクトの型。ユーザー情報はusernameで持つ
-type RawPost = { id: number; username: string; content: string; createdAt: string; };
+/**
+ * 全ての投稿を、ユーザー情報を結合した形で取得する関数
+ * @returns ユーザー情報が結合された投稿の配列（新しい順）
+ */
+export const fetchAllPosts = async (): Promise<PostWithUser[]> => {
+  const users: User[] = mockData.users;
+  const posts: Post[] = mockData.posts;
 
-// JSONファイルからデータを読み込むヘルパー関数
-async function loadData() {
-  const filePath = path.join(process.cwd(), 'lib/mock-data.json');
-  const jsonData = await fs.readFile(filePath, 'utf-8');
-  // 読み込んだデータが内部的な型と一致すると仮定
-  return JSON.parse(jsonData) as { users: UserWithPassword[], posts: RawPost[] };
-}
-
-// 全ての投稿を取得する関数
-export const fetchAllPosts = async (): Promise<Post[]> => {
-  const { users, posts } = await loadData();
-  
   // 投稿にユーザー情報を結合
-  const populatedPosts = posts.map((post) => {
-    const foundUser = users.find((user) => user.username === post.username);
-    
-    // User型に準拠するようにユーザーオブジェクトを定義
-    const userForPost: User = foundUser 
-      ? { 
-          id: foundUser.id, // 修正: user.id を含める
-          username: foundUser.username, 
-          name: foundUser.name, 
-          avatarUrl: foundUser.avatarUrl 
-        }
-      : { 
-          id: 0, // 修正: 不明ユーザーにもプレースホルダーIDを設定
-          username: 'unknown', 
-          name: 'Unknown User', 
-          avatarUrl: '' 
-        };
+  const populatedPosts: PostWithUser[] = posts.map((post) => {
+    const foundUser = users.find((user) => user.id === post.userId);
 
-    // 元の投稿情報と、作成したuserオブジェクトをマージ
-    return { ...post, user: userForPost };
+    const userForPost: User = foundUser
+      ? foundUser
+      : { id: 0, username: 'unknown', name: 'Unknown User', email: 'unknown@example.com', avatarUrl: '' };
+
+    return { ...post, user: userForPost }; // ← userIdは残したまま
   });
 
-  // createdAtで昇順（古い順）に並べ替え
-  return populatedPosts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return populatedPosts.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 };
 
-// 特定のユーザーの投稿を取得する関数
-export const fetchPostsByUsername = async (username: string): Promise<Post[]> => {
-  const allPosts = await fetchAllPosts();
-  // ユーザーページでは新しい順にしたいので、ここで降順に並べ替え
-  return allPosts
-    .filter(post => post.user.username === username)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+/**
+ * 特定のユーザー名に紐づく投稿を取得する関数
+ */
+export const fetchPostsByUsername = async (username: string): Promise<PostWithUser[]> => {
+  const users: User[] = mockData.users;
+  const posts: Post[] = mockData.posts;
+
+  const user = users.find((u) => u.username === username);
+  if (!user) return [];
+
+  const userPosts: PostWithUser[] = posts
+    .filter((post) => post.userId === user.id)
+    .map((post) => ({ ...post, user }));
+
+  return userPosts.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 };

@@ -1,8 +1,8 @@
-import { Post } from '@/lib/data';
+import { PostWithUser } from '@/lib/data';
 import PostCard from './PostCard';
 
 type PostListProps = {
-  posts: Post[];
+  posts: PostWithUser[];
 };
 
 export default function PostList({ posts }: PostListProps) {

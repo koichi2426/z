@@ -4,6 +4,7 @@
       "id": 1,
       "username": "koichi",
       "name": "Koichi",
+      "email": "koichi@example.com",
       "avatarUrl": "https://avatar.vercel.sh/koichi",
       "password": "password123"
     },
@@ -11,6 +12,7 @@
       "id": 2,
       "username": "gemini",
       "name": "Gemini",
+      "email": "gemini@example.com",
       "avatarUrl": "https://avatar.vercel.sh/gemini",
       "password": "password123"
     },
@@ -18,6 +20,7 @@
       "id": 3,
       "username": "yuki",
       "name": "Yuki",
+      "email": "yuki@example.com",
       "avatarUrl": "https://avatar.vercel.sh/yuki",
       "password": "password123"
     },
@@ -25,6 +28,7 @@
       "id": 4,
       "username": "hiroshi",
       "name": "Hiroshi",
+      "email": "hiroshi@example.com",
       "avatarUrl": "https://avatar.vercel.sh/hiroshi",
       "password": "password123"
     },
@@ -32,6 +36,7 @@
       "id": 5,
       "username": "ai",
       "name": "Ai",
+      "email": "ai@example.com",
       "avatarUrl": "https://avatar.vercel.sh/ai",
       "password": "password123"
     }
