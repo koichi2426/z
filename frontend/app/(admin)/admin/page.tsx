@@ -183,41 +183,88 @@ export default function AdminPage() {
       </div>
     );
 
-  // --- モーダルフォーム (投稿) ---
-  const PostModal = () =>
-    isPostModalOpen && (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-        <div className="bg-gray-800 p-6 rounded-lg w-96">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-white">
-              {editingPost ? '投稿編集' : '新規投稿追加'}
-            </h3>
-            <button onClick={() => setIsPostModalOpen(false)}>
-              <X className="text-gray-400 hover:text-gray-200" />
-            </button>
-          </div>
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              setIsPostModalOpen(false);
-            }}
-          >
-            <textarea
-              defaultValue={editingPost?.content}
-              placeholder="投稿内容"
-              className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-medium"
+    // --- モーダルフォーム (投稿) ---
+    const PostModal = () =>
+      isPostModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg w-96">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-white">
+                {editingPost ? '投稿編集' : '新規投稿追加'}
+              </h3>
+              <button onClick={() => setIsPostModalOpen(false)}>
+                <X className="text-gray-400 hover:text-gray-200" />
+              </button>
+            </div>
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const userId = Number(formData.get('userId'));
+                const content = formData.get('content') as string;
+  
+                const foundUser = users.find(u => u.id === userId);
+                if (!foundUser) {
+                  alert('ユーザーが見つかりません');
+                  return;
+                }
+  
+                if (editingPost) {
+                  // 更新
+                  setPosts(
+                    posts.map(p =>
+                      p.id === editingPost.id
+                        ? { ...p, content, user: foundUser, userId }
+                        : p
+                    )
+                  );
+                } else {
+                  // 新規作成
+                  const newPost: PostWithUser = {
+                    id: posts.length ? Math.max(...posts.map(p => p.id)) + 1 : 1,
+                    userId,
+                    content,
+                    createdAt: new Date().toISOString(),
+                    user: foundUser,
+                  };
+                  setPosts([...posts, newPost]);
+                }
+                setIsPostModalOpen(false);
+              }}
             >
-              保存
-            </button>
-          </form>
+              <select
+                name="userId"
+                defaultValue={editingPost?.userId}
+                className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+                required
+              >
+                <option value="" disabled>
+                  投稿ユーザーを選択
+                </option>
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>
+                    {u.name} (@{u.username})
+                  </option>
+                ))}
+              </select>
+              <textarea
+                name="content"
+                defaultValue={editingPost?.content}
+                placeholder="投稿内容"
+                className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-medium"
+              >
+                保存
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
-    );
+      );
+  
 
   // --- UI部分 ---
   return (
