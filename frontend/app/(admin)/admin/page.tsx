@@ -6,19 +6,16 @@ import mockData from '../../../lib/mock-data.json';
 import type { User, Post, PostWithUser } from '@/lib/data';
 
 export default function AdminPage() {
-  // --- ステート定義 ---
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<PostWithUser[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [selectedPostIds, setSelectedPostIds] = useState<number[]>([]);
 
-  // モーダル管理
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editingPost, setEditingPost] = useState<PostWithUser | null>(null);
 
-  // --- データ取得処理 ---
   useEffect(() => {
     const loadedUsers = mockData.users as User[];
     const rawPosts = mockData.posts as Post[];
@@ -55,7 +52,7 @@ export default function AdminPage() {
   const handleSelectAllPosts = (e: React.ChangeEvent<HTMLInputElement>) =>
     setSelectedPostIds(e.target.checked ? posts.map(p => p.id) : []);
 
-  // --- CRUD処理 (モーダル開閉) ---
+  // --- CRUD処理 (ユーザー) ---
   const handleAddUser = () => {
     setEditingUser(null);
     setIsUserModalOpen(true);
@@ -77,6 +74,7 @@ export default function AdminPage() {
     }
   };
 
+  // --- CRUD処理 (投稿) ---
   const handleAddPost = () => {
     setEditingPost(null);
     setIsPostModalOpen(true);
@@ -98,7 +96,7 @@ export default function AdminPage() {
     }
   };
 
-  // --- モーダルフォーム ---
+  // --- モーダルフォーム (ユーザー) ---
   const UserModal = () =>
     isUserModalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
@@ -114,26 +112,65 @@ export default function AdminPage() {
           <form
             onSubmit={e => {
               e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const username = formData.get('username') as string;
+              const name = formData.get('name') as string;
+              const email = formData.get('email') as string;
+              const password = formData.get('password') as string;
+
+              if (editingUser) {
+                // 更新
+                setUsers(users.map(u =>
+                  u.id === editingUser.id
+                    ? { ...u, username, name, email, password, avatarUrl: `https://avatar.vercel.sh/${username}` }
+                    : u
+                ));
+              } else {
+                // 新規作成
+                const newUser: User = {
+                  id: users.length ? Math.max(...users.map(u => u.id)) + 1 : 1,
+                  username,
+                  name,
+                  email,
+                  password,
+                  avatarUrl: `https://avatar.vercel.sh/${username}`,
+                };
+                setUsers([...users, newUser]);
+              }
               setIsUserModalOpen(false);
             }}
           >
             <input
-              type="text"
-              defaultValue={editingUser?.name}
-              placeholder="名前"
-              className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
-            />
-            <input
+              name="username"
               type="text"
               defaultValue={editingUser?.username}
               placeholder="ユーザー名"
               className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+              required
             />
             <input
+              name="name"
+              type="text"
+              defaultValue={editingUser?.name}
+              placeholder="名前"
+              className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+              required
+            />
+            <input
+              name="email"
               type="email"
               defaultValue={editingUser?.email}
               placeholder="メール"
               className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+              required
+            />
+            <input
+              name="password"
+              type="password"
+              defaultValue={editingUser?.password}
+              placeholder="パスワード"
+              className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+              required
             />
             <button
               type="submit"
@@ -146,6 +183,7 @@ export default function AdminPage() {
       </div>
     );
 
+  // --- モーダルフォーム (投稿) ---
   const PostModal = () =>
     isPostModalOpen && (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
@@ -168,6 +206,7 @@ export default function AdminPage() {
               defaultValue={editingPost?.content}
               placeholder="投稿内容"
               className="w-full mb-3 p-2 rounded bg-gray-700 text-white"
+              required
             />
             <button
               type="submit"
