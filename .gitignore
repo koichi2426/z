@@ -20,3 +20,6 @@ pnpm-debug.log*
 # OS固有のファイル
 .DS_Store
 Thumbs.db
+
+# 秘密鍵ファイル（AWS EC2用）
+z-key.pem
