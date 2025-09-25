@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # -----------------------------
+  # フロントエンド (Next.js)
+  # -----------------------------
+  frontend:
+    image: 577638369238.dkr.ecr.ap-northeast-1.amazonaws.com/z-frontend:latest
+    container_name: z-frontend
+    ports:
+      - "80:3000"   # 外部からは80番でアクセス
+    restart: unless-stopped
+    environment:
+      - API_URL=http://backend:5000
+    depends_on:
+      - backend
+    networks:
+      - z-network
+
+  # -----------------------------
+  # バックエンド (APIサーバー)
+  # -----------------------------
+  backend:
+    image: 577638369238.dkr.ecr.ap-northeast-1.amazonaws.com/z-backend:latest
+    container_name: z-backend
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=z_user
+      - DB_PASSWORD=z_password
+      - DB_NAME=z_db
+    depends_on:
+      - mysql
+    networks:
+      - z-network
+
+  # -----------------------------
+  # データベース (MySQL)
+  # -----------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: z-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - z-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=z_db
+      - MYSQL_USER=z_user
+      - MYSQL_PASSWORD=z_password
+    restart: unless-stopped
+    networks:
+      - z-network
+
+# 永続化ボリューム
+volumes:
+  z-db-data:
+
+# ネットワーク
+networks:
+  z-network:
+    driver: bridge
