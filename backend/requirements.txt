@@ -1,0 +1,15 @@
+# === Web Framework ===
+fastapi
+uvicorn[standard]
+
+# === Database ===
+mysql-connector-python
+sqlalchemy
+alembic
+
+# === Env ===
+python-dotenv
+
+# === Auth (JWT / Password Hashing) ===
+passlib[bcrypt]
+python-jose[cryptography]
