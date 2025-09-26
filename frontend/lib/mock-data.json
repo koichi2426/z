@@ -1,0 +1,89 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "koichi",
+      "name": "Koichi",
+      "email": "koichi@example.com",
+      "avatarUrl": "https://avatar.vercel.sh/koichi",
+      "password": "password123"
+    },
+    {
+      "id": 2,
+      "username": "gemini",
+      "name": "Gemini",
+      "email": "gemini@example.com",
+      "avatarUrl": "https://avatar.vercel.sh/gemini",
+      "password": "password123"
+    },
+    {
+      "id": 3,
+      "username": "yuki",
+      "name": "Yuki",
+      "email": "yuki@example.com",
+      "avatarUrl": "https://avatar.vercel.sh/yuki",
+      "password": "password123"
+    },
+    {
+      "id": 4,
+      "username": "hiroshi",
+      "name": "Hiroshi",
+      "email": "hiroshi@example.com",
+      "avatarUrl": "https://avatar.vercel.sh/hiroshi",
+      "password": "password123"
+    },
+    {
+      "id": 5,
+      "username": "ai",
+      "name": "Ai",
+      "email": "ai@example.com",
+      "avatarUrl": "https://avatar.vercel.sh/ai",
+      "password": "password123"
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "userId": 1,
+      "content": "9月になりましたね。",
+      "createdAt": "2025-09-01T12:05:00Z"
+    },
+    {
+      "id": 2,
+      "userId": 3,
+      "content": "新しい月の始まり！",
+      "createdAt": "2025-09-01T15:30:00Z"
+    },
+    {
+      "id": 3,
+      "userId": 2,
+      "content": "シミュレーション機能の実装準備。",
+      "createdAt": "2025-09-10T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "userId": 4,
+      "content": "タイムスタンプをISO形式に更新しました。",
+      "createdAt": "2025-09-23T18:30:00Z"
+    },
+    {
+      "id": 5,
+      "userId": 3,
+      "content": "再生ボタンを押すのが楽しみです。",
+      "createdAt": "2025-09-23T20:15:00Z"
+    },
+    {
+      "id": 6,
+      "userId": 2,
+      "content": "現在の時刻までの動作を再現します。",
+      "createdAt": "2025-09-23T20:45:00Z"
+    },
+    {
+      "id": 7,
+      "userId": 5,
+      "content": "管理者ページがすごいことになってる！",
+      "createdAt": "2025-09-23T20:50:00Z"
+    }
+  ]
+}
+

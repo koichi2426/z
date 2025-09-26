@@ -1,0 +1,27 @@
+# 依存関係
+node_modules/
+
+# Next.js ビルド成果物
+.next/
+
+# 環境変数ファイル
+.env*.local
+.env
+
+# 本番用ビルド成果物 (standalone output)
+.next/standalone/
+
+# ログファイル
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS固有のファイル
+.DS_Store
+Thumbs.db
+
+# 秘密鍵・認証情報
+z-key.pem
+z-key-tokyo.pem
+z-deploy-user_accessKeys.csv

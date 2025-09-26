@@ -1,0 +1,85 @@
+services:
+  # ==============================
+  # バックエンド (FastAPI)
+  # ==============================
+  backend:
+    build:
+      context: ./backend
+    container_name: z-backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - z-network
+
+  # ==============================
+  # フロントエンド (Next.js)
+  # ==============================
+  frontend:
+    build:
+      context: ./frontend
+    container_name: z-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # ブラウザ用 → ホストマシンからアクセス
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      # SSR用 → コンテナ間通信はサービス名で解決
+      INTERNAL_API_URL: http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - z-network
+
+  # ==============================
+  # データベース (MySQL)
+  # ==============================
+  mysql:
+    image: mysql:8.0
+    container_name: z-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - z-db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - z-network
+
+# ==============================
+# 永続化ボリューム
+# ==============================
+volumes:
+  z-db-data:
+
+# ==============================
+# カスタムネットワーク
+# ==============================
+networks:
+  z-network:
+    driver: bridge
