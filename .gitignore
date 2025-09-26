@@ -21,6 +21,7 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
-# 秘密鍵ファイル（AWS EC2用）
+# 秘密鍵・認証情報
 z-key.pem
 z-key-tokyo.pem
+z-deploy-user_accessKeys.csv
