@@ -115,6 +115,9 @@ class MySQLHandler(SQL):
         conn.close()
 
     def execute(self, query: str, *params: Any) -> None:
+        """
+        INSERT / UPDATE / DELETE を実行する。
+        """
         conn = self._get_connection()
         try:
             with conn.cursor() as cur:
@@ -125,6 +128,24 @@ class MySQLHandler(SQL):
             raise
         finally:
             self._put_connection(conn)
+
+    def execute_and_return_id(self, query: str, *params: Any) -> int:
+        """
+        INSERT を実行し、自動採番された ID を返す。
+        """
+        conn = self._get_connection()
+        last_id = -1
+        try:
+            with conn.cursor() as cur:
+                cur.execute(query, params)
+                last_id = cur.lastrowid
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            self._put_connection(conn)
+        return last_id
 
     def query(self, query: str, *params: Any) -> Rows:
         conn = self._get_connection()
