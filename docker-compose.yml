@@ -1,72 +1,87 @@
-# Docker Composeファイルの書式バージョンを指定します。
 version: '3.8'
 
-# 起動するコンテナ（サービス）群を定義するセクションです。
 services:
   # -------------------------------------------
-  # フロントエンド (Next.js) サービスの定義
+  # バックエンド (FastAPI)
+  # -------------------------------------------
+  backend:
+    build:
+      context: ./backend
+    container_name: z-backend
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - z-network
+
+  # -------------------------------------------
+  # フロントエンド (Next.js)
   # -------------------------------------------
   frontend:
-    # Dockerイメージのビルド方法を指定します。
     build:
-      # 'context'はDockerfileがあるディレクトリのパスを指します。
-      # ここでは、このファイルと同じ階層にある'frontend'ディレクトリを指定しています。
       context: ./frontend
-    # 起動するコンテナに'z-frontend'という名前を付けます。
     container_name: z-frontend
-    # ポートのマッピング設定です。'ホストPCのポート:コンテナのポート'の形式で記述します。
     ports:
       - "3000:3000"
-    # コンテナの再起動ポリシーです。'unless-stopped'は、意図せず停止した場合に自動で再起動します。
-    restart: unless-stopped
-    # コンテナ内で使用する環境変数を設定します。
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     environment:
-      # - DB_HOST=mysql # 接続先のDBホスト名。'mysql'は下のサービス名を指します。
-      - DB_USER=z_user # データベースのユーザー名
-      - DB_PASSWORD=z_password # データベースのパスワード
-      - DB_NAME=z_db # データベース名
-    # 依存関係を指定します。'mysql'サービスが起動してから、このサービスが起動します。
+      NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
-      - mysql
-    # このサービスが参加するネットワークを指定します。
+      - backend
     networks:
       - z-network
 
   # -------------------------------------------
-  # データベース (MySQL) サービスの定義
+  # データベース (MySQL)
   # -------------------------------------------
   mysql:
-    # ビルド済みの公式MySQLイメージ(バージョン8.0)をDocker Hubから取得します。
     image: mysql:8.0
-    # 起動するコンテナに'z-db'という名前を付けます。
     container_name: z-db
-    # ホストPCの3306番ポートとコンテナの3306番ポートを接続します。
     ports:
       - "3306:3306"
-    # データの永続化設定です。コンテナを削除してもデータが消えないようにします。
     volumes:
-      # 'z-db-data'という名前のボリュームを、コンテナ内の'/var/lib/mysql'にマウントします。
       - z-db-data:/var/lib/mysql
-    # MySQLコンテナの初期設定を行うための環境変数です。
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword # MySQLのrootユーザーのパスワード
-      - MYSQL_DATABASE=z_db # 作成するデータベース名
-      - MYSQL_USER=z_user # 作成するユーザー名
-      - MYSQL_PASSWORD=z_password # 上記ユーザーのパスワード
-    # コンテナの再起動ポリシーです。
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     restart: unless-stopped
-    # このサービスが参加するネットワークを指定します。
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - z-network
 
-# データの永続化に使用するボリュームを定義するセクションです。
+# -------------------------------------------
+# 永続化ボリューム
+# -------------------------------------------
 volumes:
-  # 'z-db-data'という名前のボリュームを作成します。
   z-db-data:
 
-# コンテナ間の通信に使用するネットワークを定義するセクションです。
+# -------------------------------------------
+# カスタムネットワーク
+# -------------------------------------------
 networks:
-  # 'z-network'という名前のカスタムネットワークを作成します。
   z-network:
-    # 'bridge'は最も一般的なネットワークドライバです。
     driver: bridge
