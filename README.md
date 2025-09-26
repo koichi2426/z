@@ -34,7 +34,7 @@ DockerとDocker Composeがインストールされていれば、以下の簡単
 3.  **envファイルをルートディレクトリに配置**
 4.  **データベースにマイグレーションファイルの内容を適用**
     ```bash
-    docker-compose -f docker-compose.dev.yml run --rm backend python -m alembic upgrade head
+    docker-compose -f docker-compose.yml run --rm backend python -m alembic upgrade head
     ```
 
 5.  **Dockerコンテナをビルドして起動**
