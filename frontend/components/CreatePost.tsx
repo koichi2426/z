@@ -3,12 +3,14 @@
 import Image from "next/image";
 import { useState } from "react";
 import { createPost } from "@/fetchs/posts";
+import { VerifyTokenResponse } from "@/fetchs/auth"; // ← user の型を使う
 
 type CreatePostProps = {
   token: string | null;
+  user: VerifyTokenResponse | null; // ← user を受け取れるようにする
 };
 
-export function CreatePost({ token }: CreatePostProps) {
+export function CreatePost({ token, user }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +39,7 @@ export function CreatePost({ token }: CreatePostProps) {
   return (
     <div className="flex space-x-4 p-4 border-b border-slate-700">
       <Image
-        src="https://avatar.vercel.sh/koichi" // TODO: サーバーから受け取った avatar_url を使う
+        src={user?.avatar_url || "https://avatar.vercel.sh/guest"} // ← 動的に avatarUrl を反映
         alt="あなたのアバター"
         width={48}
         height={48}
