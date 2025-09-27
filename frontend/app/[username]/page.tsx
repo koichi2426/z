@@ -1,17 +1,17 @@
 import PostList from '@/components/PostList';
-import { fetchPostsByUsername } from '@/lib/posts';
+import { fetchPostsByUsername } from '@/fetchs/posts';
 import type { PostWithUser } from '@/lib/data';
 
 type UserPageProps = {
-  params: Promise<{
+  params: {
     username: string;
-  }>;
+  };
 };
 
 export default async function UserPage({ params }: UserPageProps) {
-  // params を await して展開
-  const { username } = await params;
+  const { username } = params;
 
+  // username から投稿を取得
   const posts: PostWithUser[] = await fetchPostsByUsername(username);
 
   const userName = posts[0]?.user.name ?? username;

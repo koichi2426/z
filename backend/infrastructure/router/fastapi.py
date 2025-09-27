@@ -17,6 +17,7 @@ from adapter.controller.delete_all_users_controller import DeleteAllUsersControl
 
 from adapter.controller.get_all_posts_controller import GetAllPostsController
 from adapter.controller.get_posts_by_user_controller import GetPostsByUserController
+from adapter.controller.get_posts_by_username_controller import GetPostsByUsernameController  # ★追加
 from adapter.controller.create_post_controller import CreatePostController
 from adapter.controller.update_post_controller import UpdatePostController
 from adapter.controller.delete_post_controller import DeletePostController
@@ -35,6 +36,7 @@ from adapter.presenter.delete_all_users_presenter import new_delete_all_users_pr
 
 from adapter.presenter.get_all_posts_presenter import new_get_all_posts_presenter
 from adapter.presenter.get_posts_by_user_presenter import new_get_posts_by_user_presenter
+from adapter.presenter.get_posts_by_username_presenter import new_get_posts_by_username_presenter  # ★追加
 from adapter.presenter.create_post_presenter import new_create_post_presenter
 from adapter.presenter.update_post_presenter import new_update_post_presenter
 from adapter.presenter.delete_post_presenter import new_delete_post_presenter
@@ -59,6 +61,7 @@ from usecase.delete_all_users import new_delete_all_users_interactor
 
 from usecase.get_all_posts import new_get_all_posts_interactor
 from usecase.get_posts_by_user import GetPostsByUserInput, new_get_posts_by_user_interactor
+from usecase.get_posts_by_username import GetPostsByUsernameInput, new_get_posts_by_username_interactor  # ★追加
 from usecase.create_post import CreatePostInput, new_create_post_interactor
 from usecase.update_post import UpdatePostInput, new_update_post_interactor
 from usecase.delete_post import DeletePostInput, new_delete_post_interactor
@@ -66,6 +69,7 @@ from usecase.delete_all_posts import new_delete_all_posts_interactor
 
 # --- Domain service (Auth) ---
 from infrastructure.domain.auth_domain_service_impl import AuthDomainServiceImpl
+
 
 
 # === Router Setup ===
@@ -241,6 +245,22 @@ def get_posts_by_user(user_id: int):
     input_data = GetPostsByUserInput(user_id=user_id)
     response_dict = controller.execute(input_data)
     return handle_response(response_dict)
+
+
+@router.get("/v1/posts/username/{username}")
+def get_posts_by_username(username: str):
+    post_repo = PostMySQL(db_handler)
+    user_repo = UserMySQL(db_handler)
+    presenter = new_get_posts_by_username_presenter()  # ✅ 修正: 正しいプレゼンター
+    usecase = new_get_posts_by_username_interactor(presenter, post_repo, user_repo, ctx_timeout)
+    controller = GetPostsByUsernameController(usecase)
+
+    # ✅ 修正: DTO にラップして渡す
+    input_data = GetPostsByUsernameInput(username=username)
+
+    response_dict = controller.execute(input_data)
+    return handle_response(response_dict)
+
 
 
 @router.post("/v1/posts")

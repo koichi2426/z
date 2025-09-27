@@ -45,6 +45,13 @@ export const fetchPostsByUserId = async (userId: number): Promise<ApiPostWithUse
   return data.posts; // ← unwrap
 };
 
+export const fetchPostsByUsername = async (username: string): Promise<ApiPostWithUser[]> => {
+  const res = await fetch(`${API_URL}/v1/posts/username/${username}`);
+  if (!res.ok) throw new Error(`Failed to fetch posts by username: ${res.status}`);
+
+  const data = await res.json();
+  return data.posts; // ← unwrap
+};
 
 export const createPost = async (
   input: CreatePostInput,

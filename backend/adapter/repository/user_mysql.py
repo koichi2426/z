@@ -39,6 +39,20 @@ class UserMySQL(UserRepository):
         except Exception:
             return None
 
+    def find_by_username(self, username: str) -> Optional[User]:
+        query = "SELECT id, username, name, email, avatar_url, password FROM users WHERE username = %s LIMIT 1"
+        try:
+            row = self.db.query_row(query, username)
+            if not row:
+                return None
+            values = row.get_values()
+            print("DEBUG find_by_username values:", values)
+            return self._scan_row_data(values)
+        except Exception as e:
+            print(f"Error in find_by_username: {e}")
+            return None
+
+
     def find_all(self) -> List[User]:
         query = "SELECT id, username, name, email, avatar_url, password FROM users"
         try:
