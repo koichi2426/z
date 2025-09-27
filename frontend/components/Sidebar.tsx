@@ -5,15 +5,22 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/fetchs/auth";
 
 export default async function Sidebar() {
-  // cookies() は Promise なので await 必須 (Next.js 15 以降)
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
+  console.log("Sidebar::auth_token =", token);
 
   let signedIn = false;
+  let user = null;
+
   try {
     if (token) {
       const res = await verifyToken(token);
-      signedIn = res.valid;
+      console.log("Sidebar::verifyToken response =", res);
+
+      if (res && res.id) {
+        signedIn = true;
+        user = res;
+      }
     }
   } catch (err) {
     console.error("Token verification failed:", err);

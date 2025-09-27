@@ -19,14 +19,11 @@ export type LoginResponse = {
 };
 
 export type VerifyTokenResponse = {
-  valid: boolean;
-  user?: {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
-    avatar_url: string;
-  };
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  avatar_url: string;
 };
 
 export type LogoutResponse = true;
