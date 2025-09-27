@@ -11,12 +11,20 @@ type Props = {
 export default function LogoutButton({ token }: Props) {
   const router = useRouter();
 
+  // トークン確認用ログ
+  console.log('LogoutButton::received token =', token);
+
   const handleLogout = async () => {
     try {
+      console.log('LogoutButton::logout start with token =', token);
+
       await logout(token);
 
       // Cookie削除 (クライアント側)
       document.cookie = 'auth_token=; path=/; max-age=0;';
+
+      // ログイン後トップページへ (リロード付き)
+      window.location.href = '/';
 
       router.push('/login');
     } catch (err) {
