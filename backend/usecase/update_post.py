@@ -2,6 +2,7 @@ import abc
 from dataclasses import dataclass
 from typing import Protocol, Tuple
 from domain.post import Post, PostRepository
+from domain.auth_domain_service import AuthDomainService
 
 
 # ======================================
@@ -18,7 +19,7 @@ class UpdatePostUseCase(Protocol):
 @dataclass
 class UpdatePostInput:
     id: int
-    user_id: int
+    token: str
     content: str
     created_at: str  # ISO 8601 datetime
 
@@ -56,18 +57,23 @@ class UpdatePostInteractor:
         self,
         presenter: "UpdatePostPresenter",
         repo: PostRepository,
+        auth_service: AuthDomainService,
         timeout_sec: int = 10,
     ):
         self.presenter = presenter
         self.repo = repo
+        self.auth_service = auth_service
         self.timeout_sec = timeout_sec
 
     def execute(self, input_data: UpdatePostInput) -> Tuple["UpdatePostOutput", Exception | None]:
         try:
+            # tokenからユーザー特定
+            user = self.auth_service.verify_token(input_data.token)
+
             # 更新用Postエンティティを作成
             updated_post = Post(
                 id=input_data.id,
-                user_id=input_data.user_id,
+                user_id=user.id,
                 content=input_data.content,
                 created_at=input_data.created_at,
             )
@@ -89,10 +95,12 @@ class UpdatePostInteractor:
 def new_update_post_interactor(
     presenter: "UpdatePostPresenter",
     repo: PostRepository,
+    auth_service: AuthDomainService,
     timeout_sec: int,
 ) -> "UpdatePostUseCase":
     return UpdatePostInteractor(
         presenter=presenter,
         repo=repo,
+        auth_service=auth_service,
         timeout_sec=timeout_sec,
     )

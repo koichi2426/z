@@ -1,4 +1,3 @@
-// frontend/fetchs/auth.ts
 import { API_URL } from "./config";
 
 // --- API専用型定義 ---
@@ -48,8 +47,11 @@ export const login = async (
 };
 
 export const verifyToken = async (token: string): Promise<VerifyTokenResponse> => {
-  const res = await fetch(`${API_URL}/v1/auth/verify?token=${token}`, {
+  const res = await fetch(`${API_URL}/v1/auth/verify`, {
     method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) {

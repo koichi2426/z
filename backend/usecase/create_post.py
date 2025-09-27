@@ -2,6 +2,8 @@ import abc
 from dataclasses import dataclass
 from typing import Protocol, Tuple
 from domain.post import Post, PostRepository
+from domain.user import User
+from domain.auth_domain_service import AuthDomainService
 
 
 # ======================================
@@ -17,7 +19,7 @@ class CreatePostUseCase(Protocol):
 # ======================================
 @dataclass
 class CreatePostInput:
-    user_id: int
+    token: str
     content: str
     created_at: str  # ISO 8601 datetime
 
@@ -55,18 +57,23 @@ class CreatePostInteractor:
         self,
         presenter: "CreatePostPresenter",
         repo: PostRepository,
+        auth_service: AuthDomainService,
         timeout_sec: int = 10,
     ):
         self.presenter = presenter
         self.repo = repo
+        self.auth_service = auth_service
         self.timeout_sec = timeout_sec
 
     def execute(self, input_data: CreatePostInput) -> Tuple["CreatePostOutput", Exception | None]:
         try:
+            # token から user を特定
+            user: User = self.auth_service.verify_token(input_data.token)
+
             # Postエンティティを作成
             new_post = Post(
                 id=0,  # DBが自動採番する想定
-                user_id=input_data.user_id,
+                user_id=user.id,
                 content=input_data.content,
                 created_at=input_data.created_at,
             )
@@ -88,10 +95,12 @@ class CreatePostInteractor:
 def new_create_post_interactor(
     presenter: "CreatePostPresenter",
     repo: PostRepository,
+    auth_service: AuthDomainService,
     timeout_sec: int,
 ) -> "CreatePostUseCase":
     return CreatePostInteractor(
         presenter=presenter,
         repo=repo,
+        auth_service=auth_service,
         timeout_sec=timeout_sec,
     )

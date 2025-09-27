@@ -22,15 +22,16 @@ export default async function RootLayout({
 
   let user: VerifyTokenResponse | null = null;
 
-  try {
-    if (token) {
+  if (token) {
+    try {
       const res = await verifyToken(token);
       if (res && res.id) {
         user = res;
       }
+    } catch {
+      // 認証エラーは無視してゲスト扱い
+      user = null;
     }
-  } catch (err) {
-    console.error("RootLayout::verifyToken failed", err);
   }
 
   return (

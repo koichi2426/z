@@ -1,8 +1,8 @@
 import json
-from fastapi import APIRouter
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, Optional
 
 # --- Controller imports ---
 from adapter.controller.login_user_controller import LoginUserController
@@ -138,7 +138,11 @@ def login_user(request: LoginRequest):
 
 
 @router.post("/v1/auth/verify")
-def verify_token(token: str):
+def verify_token(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = authorization.split(" ")[1]
+
     presenter = new_verify_token_presenter()
     user_repo = UserMySQL(db_handler)
     domain_service = AuthDomainServiceImpl(user_repo)
@@ -221,7 +225,7 @@ def get_all_posts():
     post_repo = PostMySQL(db_handler)
     user_repo = UserMySQL(db_handler)
     presenter = new_get_all_posts_presenter()
-    usecase = new_get_all_posts_interactor(presenter, post_repo, user_repo, ctx_timeout)
+    usecase = new_get_all_posts_interactor(presenter, post_repo, user_repo)
     controller = GetAllPostsController(usecase)
     response_dict = controller.execute()
     return handle_response(response_dict)
@@ -232,7 +236,7 @@ def get_posts_by_user(user_id: int):
     post_repo = PostMySQL(db_handler)
     user_repo = UserMySQL(db_handler)
     presenter = new_get_posts_by_user_presenter()
-    usecase = new_get_posts_by_user_interactor(presenter, post_repo, user_repo, ctx_timeout)
+    usecase = new_get_posts_by_user_interactor(presenter, post_repo, user_repo)  # ← 修正
     controller = GetPostsByUserController(usecase)
     input_data = GetPostsByUserInput(user_id=user_id)
     response_dict = controller.execute(input_data)
@@ -240,34 +244,76 @@ def get_posts_by_user(user_id: int):
 
 
 @router.post("/v1/posts")
-def create_post(request: CreatePostRequest):
+def create_post(
+    request: CreatePostRequest,
+    authorization: str = Header(None),
+):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = authorization.split(" ", 1)[1]
+
     repo = PostMySQL(db_handler)
     presenter = new_create_post_presenter()
     usecase = new_create_post_interactor(presenter, repo, ctx_timeout)
     controller = CreatePostController(usecase)
-    input_data = CreatePostInput(user_id=request.user_id, content=request.content)
+
+    # user_id ではなく token を渡す
+    input_data = CreatePostInput(
+        token=token,
+        content=request.content,
+        created_at=request.created_at,
+    )
     response_dict = controller.execute(input_data)
     return handle_response(response_dict, success_code=201)
 
 
 @router.put("/v1/posts")
-def update_post(request: UpdatePostRequest):
+def update_post(
+    request: UpdatePostRequest,
+    authorization: Optional[str] = Header(None),
+):
+    # Authorization ヘッダーをチェック
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.split(" ")[1]
+
     repo = PostMySQL(db_handler)
     presenter = new_update_post_presenter()
-    usecase = new_update_post_interactor(presenter, repo, ctx_timeout)
+    domain_service = AuthDomainServiceImpl(UserMySQL(db_handler))  # token検証のため追加
+    usecase = new_update_post_interactor(presenter, repo, domain_service, ctx_timeout)
     controller = UpdatePostController(usecase)
-    input_data = UpdatePostInput(**request.dict())
+
+    # UpdatePostInput に token を渡す
+    input_data = UpdatePostInput(
+        id=request.id,
+        token=token,
+        content=request.content,
+        created_at=request.created_at,
+    )
+
     response_dict = controller.execute(input_data)
     return handle_response(response_dict)
 
 
 @router.delete("/v1/posts/{post_id}")
-def delete_post(post_id: int):
+def delete_post(post_id: int, authorization: str = Header(None)):
+    # Authorization ヘッダー確認
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = authorization.split(" ")[1]
+
     repo = PostMySQL(db_handler)
     presenter = new_delete_post_presenter()
-    usecase = new_delete_post_interactor(presenter, repo, ctx_timeout)
+    # auth_service を追加してユーザー特定できるようにする
+    user_repo = UserMySQL(db_handler)
+    auth_service = AuthDomainServiceImpl(user_repo)
+
+    usecase = new_delete_post_interactor(presenter, repo, auth_service, ctx_timeout)
     controller = DeletePostController(usecase)
-    input_data = DeletePostInput(post_id=post_id)
+
+    # token と post_id を渡す
+    input_data = DeletePostInput(id=post_id, token=token)
     response_dict = controller.execute(input_data)
     return handle_response(response_dict, success_code=204)
 
