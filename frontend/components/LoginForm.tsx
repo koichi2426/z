@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { login } from '@/fetchs/auth';
 
 export default function LoginForm() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,8 +23,8 @@ export default function LoginForm() {
       // Cookie にトークン保存
       document.cookie = `auth_token=${res.token}; path=/;`;
 
-      // ログイン後トップページへ
-      router.push('/');
+      // ログイン後トップページへ (リロード付き)
+      window.location.href = '/';
     } catch (err) {
       console.error('Login failed:', err);
       setError('ユーザー名またはパスワードが違います。');
