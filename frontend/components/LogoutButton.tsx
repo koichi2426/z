@@ -4,26 +4,20 @@ import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/fetchs/auth';
 
-export default function LogoutButton() {
+type Props = {
+  token: string;
+};
+
+export default function LogoutButton({ token }: Props) {
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      // Cookieからトークンを取得
-      const token = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('auth_token='))
-        ?.split('=')[1];
+      await logout(token);
 
-      if (token) {
-        // バックエンドのログアウトAPIを呼び出す
-        await logout(token);
-      }
-
-      // Cookieを削除
+      // Cookie削除 (クライアント側)
       document.cookie = 'auth_token=; path=/; max-age=0;';
 
-      // ログインページにリダイレクト
       router.push('/login');
     } catch (err) {
       console.error('Logout failed:', err);

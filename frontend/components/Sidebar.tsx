@@ -1,30 +1,15 @@
 import Link from "next/link";
 import { Home, User, LogIn, Shield } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/fetchs/auth";
+import { VerifyTokenResponse } from "@/fetchs/auth";
 
-export default async function Sidebar() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
-  console.log("Sidebar::auth_token =", token);
+type SidebarProps = {
+  user: VerifyTokenResponse | null;
+  token: string | null;   // ← 追加
+};
 
-  let signedIn = false;
-  let user = null;
-
-  try {
-    if (token) {
-      const res = await verifyToken(token);
-      console.log("Sidebar::verifyToken response =", res);
-
-      if (res && res.id) {
-        signedIn = true;
-        user = res;
-      }
-    }
-  } catch (err) {
-    console.error("Token verification failed:", err);
-  }
+export default function Sidebar({ user, token }: SidebarProps) {
+  const signedIn = !!user;
 
   const navItems = [
     { href: "/", label: "ホーム", icon: Home, show: true },
@@ -37,6 +22,14 @@ export default async function Sidebar() {
     <header className="flex flex-col justify-between p-4 w-64 h-screen border-r border-slate-700">
       <div>
         <div className="text-2xl font-bold mb-8">z</div>
+
+        {signedIn && (
+          <div className="mb-6">
+            <div className="text-lg font-semibold">{user?.name}</div>
+            <div className="text-sm text-slate-400">{user?.email}</div>
+          </div>
+        )}
+
         <nav>
           <ul>
             {navItems.map(
@@ -56,9 +49,10 @@ export default async function Sidebar() {
           </ul>
         </nav>
       </div>
-      {signedIn && (
+      {signedIn && token && (
         <div className="mb-4">
-          <LogoutButton />
+          {/* token を渡す */}
+          <LogoutButton token={token} />
         </div>
       )}
     </header>
