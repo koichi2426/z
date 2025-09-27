@@ -2,24 +2,33 @@
 
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { logout } from '@/fetchs/auth';
 
 export default function LogoutButton() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    // 本来はここでバックエンドのログアウトAPIを呼び出します。
-    // 例: await fetch('/api/auth/logout', { method: 'POST' });
-    console.log('Logging out...');
+    try {
+      // Cookieからトークンを取得
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('auth_token='))
+        ?.split('=')[1];
 
-    // クライアント側の認証情報（例: state）をクリアし、
-    // ログインページにリダイレクトします。
-    // CookieがHttpOnly属性で管理されている場合、サーバー側でクリアされれば
-    // クライアントでの特別な処理は不要です。
-    
-    // ログインページへ遷移
-    router.push('/login');
-    // 状態を完全にリセットするためにページをリロードするのも有効です
-    // router.refresh(); 
+      if (token) {
+        // バックエンドのログアウトAPIを呼び出す
+        await logout(token);
+      }
+
+      // Cookieを削除
+      document.cookie = 'auth_token=; path=/; max-age=0;';
+
+      // ログインページにリダイレクト
+      router.push('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+      alert('ログアウトに失敗しました。');
+    }
   };
 
   return (

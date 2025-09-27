@@ -2,6 +2,12 @@ import abc
 from dataclasses import dataclass
 from typing import Protocol, Tuple
 from domain.user import User, UserRepository, NewUser
+from passlib.context import CryptContext
+
+# ======================================
+# パスワードハッシュ用
+# ======================================
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # ======================================
@@ -23,7 +29,7 @@ class CreateUserInput:
     name: str
     email: str
     avatar_url: str
-    password: str  # 本来はハッシュ化済みを想定
+    password: str  # 平文で受け取る
 
 
 # ======================================
@@ -70,6 +76,9 @@ class CreateUserInteractor:
         self, input: CreateUserInput
     ) -> Tuple["CreateUserOutput", Exception | None]:
         try:
+            # パスワードをハッシュ化
+            hashed_password = pwd_context.hash(input.password)
+
             # IDはDB側で自動採番される想定なので仮で0をセット
             new_user = NewUser(
                 id=0,
@@ -77,7 +86,7 @@ class CreateUserInteractor:
                 name=input.name,
                 email=input.email,
                 avatar_url=input.avatar_url,
-                password=input.password,
+                password=hashed_password,  # ハッシュ化した値を保存
             )
 
             # 永続化

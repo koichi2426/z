@@ -2,7 +2,7 @@ import json
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
-from typing import Any, Dict, List
+from typing import Dict
 
 # --- Controller imports ---
 from adapter.controller.login_user_controller import LoginUserController
@@ -128,7 +128,8 @@ class UpdatePostRequest(BaseModel):
 @router.post("/v1/auth/login")
 def login_user(request: LoginRequest):
     presenter = new_login_user_presenter()
-    domain_service = AuthDomainServiceImpl()
+    user_repo = UserMySQL(db_handler)
+    domain_service = AuthDomainServiceImpl(user_repo)
     usecase = new_login_user_interactor(presenter, domain_service, ctx_timeout)
     controller = LoginUserController(usecase)
     input_data = LoginUserInput(email=request.email, password=request.password)
@@ -139,7 +140,8 @@ def login_user(request: LoginRequest):
 @router.post("/v1/auth/verify")
 def verify_token(token: str):
     presenter = new_verify_token_presenter()
-    domain_service = AuthDomainServiceImpl()
+    user_repo = UserMySQL(db_handler)
+    domain_service = AuthDomainServiceImpl(user_repo)
     usecase = new_verify_token_interactor(presenter, domain_service, ctx_timeout)
     controller = VerifyTokenController(usecase)
     input_data = VerifyTokenInput(token=token)
@@ -150,7 +152,8 @@ def verify_token(token: str):
 @router.post("/v1/auth/logout")
 def logout_user(token: str):
     presenter = new_logout_user_presenter()
-    domain_service = AuthDomainServiceImpl()
+    user_repo = UserMySQL(db_handler)
+    domain_service = AuthDomainServiceImpl(user_repo)
     usecase = new_logout_user_interactor(presenter, domain_service, ctx_timeout)
     controller = LogoutUserController(usecase)
     input_data = LogoutUserInput(token=token)

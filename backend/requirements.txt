@@ -12,4 +12,5 @@ python-dotenv
 
 # === Auth (JWT / Password Hashing) ===
 passlib[bcrypt]
+bcrypt==3.2.2
 python-jose[cryptography]
