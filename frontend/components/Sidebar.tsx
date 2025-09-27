@@ -2,24 +2,18 @@ import Link from "next/link";
 import { Home, User, LogIn, Shield } from "lucide-react";
 import LogoutButton from "@/components/LogoutButton";
 import { cookies } from "next/headers";
-import { API_URL } from "@/fetchs/config";
+import { verifyToken } from "@/fetchs/auth";
 
 export default async function Sidebar() {
-  // next/headers の cookies() は Promise の場合があるので await
+  // cookies() は Promise なので await 必須 (Next.js 15 以降)
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
 
   let signedIn = false;
   try {
     if (token) {
-      const res = await fetch(`${API_URL}/v1/auth/verify?token=${token}`, {
-        method: "POST",
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        signedIn = data.valid;
-      }
+      const res = await verifyToken(token);
+      signedIn = res.valid;
     }
   } catch (err) {
     console.error("Token verification failed:", err);
