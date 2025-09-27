@@ -1,6 +1,7 @@
 import abc
 from dataclasses import dataclass
 from typing import Protocol, Tuple
+from datetime import datetime
 from domain.post import Post, PostRepository
 from domain.user import User
 from domain.auth_domain_service import AuthDomainService
@@ -21,7 +22,7 @@ class CreatePostUseCase(Protocol):
 class CreatePostInput:
     token: str
     content: str
-    created_at: str  # ISO 8601 datetime
+    # created_at はサーバー側で生成
 
 
 # ======================================
@@ -42,10 +43,11 @@ class CreatePostOutput:
 
 # ======================================
 # Presenterのインターフェース定義
+# （Presenter 実装が (Post, User) を受け取る想定に合わせる）
 # ======================================
 class CreatePostPresenter(abc.ABC):
     @abc.abstractmethod
-    def output(self, post: Post) -> CreatePostOutput:
+    def output(self, post_with_user: Tuple[Post, User]) -> CreatePostOutput:
         pass
 
 
@@ -70,23 +72,27 @@ class CreatePostInteractor:
             # token から user を特定
             user: User = self.auth_service.verify_token(input_data.token)
 
+            # created_at はサーバー側で生成
+            created_at = datetime.utcnow().isoformat()
+
             # Postエンティティを作成
             new_post = Post(
                 id=0,  # DBが自動採番する想定
                 user_id=user.id,
                 content=input_data.content,
-                created_at=input_data.created_at,
+                created_at=created_at,
             )
 
             # リポジトリで保存
             created_post = self.repo.create(new_post)
 
-            # Presenterに渡してDTO化
-            output = self.presenter.output(created_post)
+            # Presenterに (Post, User) を渡す ← 修正点
+            output = self.presenter.output((created_post, user))
             return output, None
         except Exception as e:
             empty_post = Post(id=0, user_id=0, content="", created_at="")
-            return self.presenter.output(empty_post), e
+            empty_user = User(id=0, username="", name="", email="", avatar_url="", password="")
+            return self.presenter.output((empty_post, empty_user)), e
 
 
 # ======================================

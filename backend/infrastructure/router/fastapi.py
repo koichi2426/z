@@ -115,7 +115,6 @@ class UpdateUserRequest(BaseModel):
     password: str
 
 class CreatePostRequest(BaseModel):
-    user_id: int
     content: str
 
 class UpdatePostRequest(BaseModel):
@@ -225,10 +224,11 @@ def get_all_posts():
     post_repo = PostMySQL(db_handler)
     user_repo = UserMySQL(db_handler)
     presenter = new_get_all_posts_presenter()
-    usecase = new_get_all_posts_interactor(presenter, post_repo, user_repo)
+    usecase = new_get_all_posts_interactor(presenter, post_repo, user_repo, ctx_timeout)
     controller = GetAllPostsController(usecase)
     response_dict = controller.execute()
     return handle_response(response_dict)
+
 
 
 @router.get("/v1/posts/user/{user_id}")
@@ -254,14 +254,14 @@ def create_post(
 
     repo = PostMySQL(db_handler)
     presenter = new_create_post_presenter()
-    usecase = new_create_post_interactor(presenter, repo, ctx_timeout)
+    auth_service = AuthDomainServiceImpl(UserMySQL(db_handler))  # ← 追加
+    usecase = new_create_post_interactor(presenter, repo, auth_service, ctx_timeout)
     controller = CreatePostController(usecase)
 
-    # user_id ではなく token を渡す
+    # created_at はサーバー側で自動生成
     input_data = CreatePostInput(
         token=token,
         content=request.content,
-        created_at=request.created_at,
     )
     response_dict = controller.execute(input_data)
     return handle_response(response_dict, success_code=201)
