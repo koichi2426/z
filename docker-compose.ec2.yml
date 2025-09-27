@@ -1,44 +1,56 @@
-version: '3.8'
-
 services:
-  # -----------------------------
+  # ==============================
+  # バックエンド (FastAPI)
+  # ==============================
+  backend:
+    # ECR上のイメージを指定します。 `${AWS_ACCOUNT_ID}` と `${AWS_REGION}` は環境に合わせて設定してください。
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/z-backend:latest
+    container_name: z-backend
+    # 本番環境では --reload フラグを削除します
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+    ports:
+      - "8000:8000"
+    # 本番環境ではソースコードのボリュームマウントは不要なため削除します (イメージにコードが含まれるため)
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - z-network
+
+  # ==============================
   # フロントエンド (Next.js)
-  # -----------------------------
+  # ==============================
   frontend:
-    image: 577638369238.dkr.ecr.ap-northeast-1.amazonaws.com/z-frontend:latest
+    # ECR上のイメージを指定します。 `${AWS_ACCOUNT_ID}` と `${AWS_REGION}` は環境に合わせて設定してください。
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/z-frontend:latest
     container_name: z-frontend
     ports:
-      - "80:3000"   # 外部からは80番でアクセス
-    restart: unless-stopped
+      # EC2の80番ポート(HTTP)へのアクセスをコンテナの3000番ポートに転送します
+      - "80:3000"
     environment:
-      - API_URL=http://backend:5000
+      # ブラウザからAPIにアクセスする際のURL。
+      # 必要に応じてEC2のパブリックIPアドレスやドメイン名に変更してください。
+      # 例: NEXT_PUBLIC_API_URL: http://your-ec2-public-ip:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      # SSR用 → コンテナ間通信はサービス名で解決 (変更不要)
+      INTERNAL_API_URL: http://backend:8000
     depends_on:
       - backend
     networks:
       - z-network
 
-  # -----------------------------
-  # バックエンド (APIサーバー)
-  # -----------------------------
-  backend:
-    image: 577638369238.dkr.ecr.ap-northeast-1.amazonaws.com/z-backend:latest
-    container_name: z-backend
-    ports:
-      - "5000:5000"
-    restart: unless-stopped
-    environment:
-      - DB_HOST=mysql
-      - DB_USER=z_user
-      - DB_PASSWORD=z_password
-      - DB_NAME=z_db
-    depends_on:
-      - mysql
-    networks:
-      - z-network
-
-  # -----------------------------
-  # データベース (MySQL)
-  # -----------------------------
+  # ==============================
+  # データベース (MySQL) - 変更なし
+  # ==============================
   mysql:
     image: mysql:8.0
     container_name: z-db
@@ -47,19 +59,28 @@ services:
     volumes:
       - z-db-data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=z_db
-      - MYSQL_USER=z_user
-      - MYSQL_PASSWORD=z_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - z-network
 
-# 永続化ボリューム
+# ==============================
+# 永続化ボリューム - 変更なし
+# ==============================
 volumes:
   z-db-data:
 
-# ネットワーク
+# ==============================
+# カスタムネットワーク - 変更なし
+# ==============================
 networks:
   z-network:
     driver: bridge
