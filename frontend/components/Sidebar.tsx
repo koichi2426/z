@@ -5,7 +5,7 @@ import { VerifyTokenResponse } from "@/fetchs/auth";
 
 type SidebarProps = {
   user: VerifyTokenResponse | null;
-  token: string | null;   // ← 追加
+  token: string | null; // ← 追加
 };
 
 export default function Sidebar({ user, token }: SidebarProps) {
@@ -13,7 +13,12 @@ export default function Sidebar({ user, token }: SidebarProps) {
 
   const navItems = [
     { href: "/", label: "ホーム", icon: Home, show: true },
-    { href: "/koichi", label: "プロフィール", icon: User, show: signedIn },
+    {
+      href: user ? `/${user.username}` : "#", // ← 動的にユーザーネームを反映
+      label: "プロフィール",
+      icon: User,
+      show: signedIn,
+    },
     { href: "/admin", label: "管理", icon: Shield, show: signedIn },
     { href: "/login", label: "ログイン", icon: LogIn, show: !signedIn },
   ];
