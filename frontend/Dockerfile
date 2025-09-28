@@ -5,6 +5,16 @@ FROM node:20-alpine AS builder
 # 作業ディレクトリを設定
 WORKDIR /app
 
+# --- ▼▼▼ ここから修正 ▼▼▼ ---
+# ビルド時に外部から変数を受け取るためのARG（引数）を定義します
+ARG API_URL_INTERNAL
+ARG NEXT_PUBLIC_API_URL
+
+# 受け取ったARGを、このビルドステージ内で使えるENV（環境変数）として設定します
+ENV API_URL_INTERNAL=$API_URL_INTERNAL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# --- ▲▲▲ ここまで修正 ▲▲▲ ---
+
 # 最初にpackage.json関連ファイルだけをコピーして依存関係をインストール
 COPY package*.json ./
 RUN npm ci
@@ -12,7 +22,7 @@ RUN npm ci
 # アプリケーションのソースコードをコピー
 COPY . .
 
-# Next.jsアプリをビルド
+# Next.jsアプリをビルドします (ここで上記のENVが使われます)
 RUN npm run build
 
 # ===== ランナーフェーズ =====
