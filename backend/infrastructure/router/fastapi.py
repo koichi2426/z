@@ -1,8 +1,8 @@
 import json
-from fastapi import APIRouter
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
-from typing import Any, Dict, List
+from typing import Dict, Optional
 
 # --- Controller imports ---
 from adapter.controller.login_user_controller import LoginUserController
@@ -17,6 +17,7 @@ from adapter.controller.delete_all_users_controller import DeleteAllUsersControl
 
 from adapter.controller.get_all_posts_controller import GetAllPostsController
 from adapter.controller.get_posts_by_user_controller import GetPostsByUserController
+from adapter.controller.get_posts_by_username_controller import GetPostsByUsernameController  # ★追加
 from adapter.controller.create_post_controller import CreatePostController
 from adapter.controller.update_post_controller import UpdatePostController
 from adapter.controller.delete_post_controller import DeletePostController
@@ -35,6 +36,7 @@ from adapter.presenter.delete_all_users_presenter import new_delete_all_users_pr
 
 from adapter.presenter.get_all_posts_presenter import new_get_all_posts_presenter
 from adapter.presenter.get_posts_by_user_presenter import new_get_posts_by_user_presenter
+from adapter.presenter.get_posts_by_username_presenter import new_get_posts_by_username_presenter  # ★追加
 from adapter.presenter.create_post_presenter import new_create_post_presenter
 from adapter.presenter.update_post_presenter import new_update_post_presenter
 from adapter.presenter.delete_post_presenter import new_delete_post_presenter
@@ -59,6 +61,7 @@ from usecase.delete_all_users import new_delete_all_users_interactor
 
 from usecase.get_all_posts import new_get_all_posts_interactor
 from usecase.get_posts_by_user import GetPostsByUserInput, new_get_posts_by_user_interactor
+from usecase.get_posts_by_username import GetPostsByUsernameInput, new_get_posts_by_username_interactor  # ★追加
 from usecase.create_post import CreatePostInput, new_create_post_interactor
 from usecase.update_post import UpdatePostInput, new_update_post_interactor
 from usecase.delete_post import DeletePostInput, new_delete_post_interactor
@@ -66,6 +69,7 @@ from usecase.delete_all_posts import new_delete_all_posts_interactor
 
 # --- Domain service (Auth) ---
 from infrastructure.domain.auth_domain_service_impl import AuthDomainServiceImpl
+
 
 
 # === Router Setup ===
@@ -115,7 +119,6 @@ class UpdateUserRequest(BaseModel):
     password: str
 
 class CreatePostRequest(BaseModel):
-    user_id: int
     content: str
 
 class UpdatePostRequest(BaseModel):
@@ -128,7 +131,8 @@ class UpdatePostRequest(BaseModel):
 @router.post("/v1/auth/login")
 def login_user(request: LoginRequest):
     presenter = new_login_user_presenter()
-    domain_service = AuthDomainServiceImpl()
+    user_repo = UserMySQL(db_handler)
+    domain_service = AuthDomainServiceImpl(user_repo)
     usecase = new_login_user_interactor(presenter, domain_service, ctx_timeout)
     controller = LoginUserController(usecase)
     input_data = LoginUserInput(email=request.email, password=request.password)
@@ -137,9 +141,14 @@ def login_user(request: LoginRequest):
 
 
 @router.post("/v1/auth/verify")
-def verify_token(token: str):
+def verify_token(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = authorization.split(" ")[1]
+
     presenter = new_verify_token_presenter()
-    domain_service = AuthDomainServiceImpl()
+    user_repo = UserMySQL(db_handler)
+    domain_service = AuthDomainServiceImpl(user_repo)
     usecase = new_verify_token_interactor(presenter, domain_service, ctx_timeout)
     controller = VerifyTokenController(usecase)
     input_data = VerifyTokenInput(token=token)
@@ -150,7 +159,8 @@ def verify_token(token: str):
 @router.post("/v1/auth/logout")
 def logout_user(token: str):
     presenter = new_logout_user_presenter()
-    domain_service = AuthDomainServiceImpl()
+    user_repo = UserMySQL(db_handler)
+    domain_service = AuthDomainServiceImpl(user_repo)
     usecase = new_logout_user_interactor(presenter, domain_service, ctx_timeout)
     controller = LogoutUserController(usecase)
     input_data = LogoutUserInput(token=token)
@@ -224,47 +234,106 @@ def get_all_posts():
     return handle_response(response_dict)
 
 
+
 @router.get("/v1/posts/user/{user_id}")
 def get_posts_by_user(user_id: int):
     post_repo = PostMySQL(db_handler)
     user_repo = UserMySQL(db_handler)
     presenter = new_get_posts_by_user_presenter()
-    usecase = new_get_posts_by_user_interactor(presenter, post_repo, user_repo, ctx_timeout)
+    usecase = new_get_posts_by_user_interactor(presenter, post_repo, user_repo)  # ← 修正
     controller = GetPostsByUserController(usecase)
     input_data = GetPostsByUserInput(user_id=user_id)
     response_dict = controller.execute(input_data)
     return handle_response(response_dict)
 
 
+@router.get("/v1/posts/username/{username}")
+def get_posts_by_username(username: str):
+    post_repo = PostMySQL(db_handler)
+    user_repo = UserMySQL(db_handler)
+    presenter = new_get_posts_by_username_presenter()  # ✅ 修正: 正しいプレゼンター
+    usecase = new_get_posts_by_username_interactor(presenter, post_repo, user_repo, ctx_timeout)
+    controller = GetPostsByUsernameController(usecase)
+
+    # ✅ 修正: DTO にラップして渡す
+    input_data = GetPostsByUsernameInput(username=username)
+
+    response_dict = controller.execute(input_data)
+    return handle_response(response_dict)
+
+
+
 @router.post("/v1/posts")
-def create_post(request: CreatePostRequest):
+def create_post(
+    request: CreatePostRequest,
+    authorization: str = Header(None),
+):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = authorization.split(" ", 1)[1]
+
     repo = PostMySQL(db_handler)
     presenter = new_create_post_presenter()
-    usecase = new_create_post_interactor(presenter, repo, ctx_timeout)
+    auth_service = AuthDomainServiceImpl(UserMySQL(db_handler))  # ← 追加
+    usecase = new_create_post_interactor(presenter, repo, auth_service, ctx_timeout)
     controller = CreatePostController(usecase)
-    input_data = CreatePostInput(user_id=request.user_id, content=request.content)
+
+    # created_at はサーバー側で自動生成
+    input_data = CreatePostInput(
+        token=token,
+        content=request.content,
+    )
     response_dict = controller.execute(input_data)
     return handle_response(response_dict, success_code=201)
 
 
 @router.put("/v1/posts")
-def update_post(request: UpdatePostRequest):
+def update_post(
+    request: UpdatePostRequest,
+    authorization: Optional[str] = Header(None),
+):
+    # Authorization ヘッダーをチェック
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.split(" ")[1]
+
     repo = PostMySQL(db_handler)
     presenter = new_update_post_presenter()
-    usecase = new_update_post_interactor(presenter, repo, ctx_timeout)
+    domain_service = AuthDomainServiceImpl(UserMySQL(db_handler))  # token検証のため追加
+    usecase = new_update_post_interactor(presenter, repo, domain_service, ctx_timeout)
     controller = UpdatePostController(usecase)
-    input_data = UpdatePostInput(**request.dict())
+
+    # UpdatePostInput に token を渡す
+    input_data = UpdatePostInput(
+        id=request.id,
+        token=token,
+        content=request.content,
+        created_at=request.created_at,
+    )
+
     response_dict = controller.execute(input_data)
     return handle_response(response_dict)
 
 
 @router.delete("/v1/posts/{post_id}")
-def delete_post(post_id: int):
+def delete_post(post_id: int, authorization: str = Header(None)):
+    # Authorization ヘッダー確認
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = authorization.split(" ")[1]
+
     repo = PostMySQL(db_handler)
     presenter = new_delete_post_presenter()
-    usecase = new_delete_post_interactor(presenter, repo, ctx_timeout)
+    # auth_service を追加してユーザー特定できるようにする
+    user_repo = UserMySQL(db_handler)
+    auth_service = AuthDomainServiceImpl(user_repo)
+
+    usecase = new_delete_post_interactor(presenter, repo, auth_service, ctx_timeout)
     controller = DeletePostController(usecase)
-    input_data = DeletePostInput(post_id=post_id)
+
+    # token と post_id を渡す
+    input_data = DeletePostInput(id=post_id, token=token)
     response_dict = controller.execute(input_data)
     return handle_response(response_dict, success_code=204)
 

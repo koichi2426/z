@@ -41,7 +41,7 @@ services:
       # ブラウザ用 → ホストマシンからアクセス
       NEXT_PUBLIC_API_URL: http://localhost:8000
       # SSR用 → コンテナ間通信はサービス名で解決
-      INTERNAL_API_URL: http://backend:8000
+      API_URL_INTERNAL: http://backend:8000
     depends_on:
       - backend
     networks:
