@@ -19,7 +19,6 @@ export default function Sidebar({ user, token }: SidebarProps) {
       icon: User,
       show: signedIn,
     },
-    { href: "/admin", label: "管理", icon: Shield, show: signedIn },
     { href: "/login", label: "ログイン", icon: LogIn, show: !signedIn },
   ];
 
