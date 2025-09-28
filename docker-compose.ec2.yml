@@ -33,10 +33,18 @@ services:
     # frontendディレクトリからビルドします
     build:
       context: ./frontend
+      # --- ▼▼▼ ここからが最重要の修正点 ▼▼▼ ---
+      # DockerfileのARGに渡す値をここで指定します。
+      # これにより、ビルド時に環境変数が使えるようになります。
+      args:
+        API_URL_INTERNAL: http://backend:8000
+        NEXT_PUBLIC_API_URL: http://176.34.25.68:8000
+      # --- ▲▲▲ ここまでが最重要の修正点 ▲▲▲ ---
     container_name: z-frontend
     ports:
       # EC2の80番ポート(HTTP)へのアクセスをコンテナの3000番ポートに転送します
       - "80:3000"
+    # environmentはコンテナ実行時に使われるので、このまま残します
     environment:
       # 【重要】この値がビルド時にフロントエンドのコードに埋め込まれます
       NEXT_PUBLIC_API_URL: http://176.34.25.68:8000
@@ -82,3 +90,4 @@ volumes:
 networks:
   z-network:
     driver: bridge
+

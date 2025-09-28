@@ -34,9 +34,21 @@ services:
   frontend:
     build:
       context: ./frontend
+      # --- ▼▼▼ ここからが最重要の修正点 ▼▼▼ ---
+      # DockerfileのARGに渡す値をここで指定します。
+      # これにより、ビルド時に環境変数が使えるようになります。
+      args:
+        API_URL_INTERNAL: http://backend:8000
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+      # --- ▲▲▲ ここまでが最重要の修正点 ▲▲▲ ---
     container_name: z-frontend
     ports:
       - "3000:3000"
+    volumes: # 開発時のホットリロードのためボリュームを定義
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    # environmentはコンテナ実行時に使われるので、このまま残します
     environment:
       # ブラウザ用 → ホストマシンからアクセス
       NEXT_PUBLIC_API_URL: http://localhost:8000
@@ -83,3 +95,4 @@ volumes:
 networks:
   z-network:
     driver: bridge
+
