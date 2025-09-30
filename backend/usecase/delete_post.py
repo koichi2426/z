@@ -63,9 +63,8 @@ class DeletePostInteractor:
         try:
             # token からユーザーを特定
             user = self.auth_service.verify_token(input_data.token)
-
-            # 投稿を取得してユーザーがオーナーか確認
-            post = self.repo.get_by_id(input_data.id)
+            # 投稿を取得してユーザーがオーナーか確認 (get_by_id -> find_by_id)
+            post = self.repo.find_by_id(input_data.id)
             if not post or post.user_id != user.id:
                 raise PermissionError("You are not authorized to delete this post")
 

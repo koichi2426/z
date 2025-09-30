@@ -1,20 +1,24 @@
-import { PostWithUser } from '@/lib/data';
-import PostCard from './PostCard';
+import { ApiPostWithUser } from "@/fetchs/posts"; // ★fetchs/postsから型をインポート
+import { VerifyTokenResponse } from "@/fetchs/auth"; // ★追加
+import PostCard from "./PostCard";
 
 type PostListProps = {
-  posts: PostWithUser[];
+  posts: ApiPostWithUser[]; // ★型を更新
+  user: VerifyTokenResponse | null; // ★追加
+  token: string | null; // ★追加
 };
 
-export default function PostList({ posts }: PostListProps) {
+export default function PostList({ posts, user, token }: PostListProps) {
   // 元の配列に影響を与えないようにコピーを作成してからソートします
   const sortedPosts = [...posts].sort((a, b) => b.id - a.id);
 
   return (
     <div>
-      {/* ソート済みの配列を使って投稿を表示します */}
-      {sortedPosts.map(post => (
-        <PostCard key={post.id} post={post} />
+      {/* ★修正点: userとtokenをPostCardに渡す */}
+      {sortedPosts.map((post) => (
+        <PostCard key={post.id} post={post} user={user} token={token} />
       ))}
     </div>
   );
 }
+
