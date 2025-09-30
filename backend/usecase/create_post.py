@@ -1,7 +1,7 @@
 import abc
 from dataclasses import dataclass
 from typing import Protocol, Tuple
-from datetime import datetime
+from datetime import datetime, timezone, timedelta  # 修正点: timezoneとtimedeltaを追加
 from domain.post import Post, PostRepository
 from domain.user import User
 from domain.auth_domain_service import AuthDomainService
@@ -72,8 +72,12 @@ class CreatePostInteractor:
             # token から user を特定
             user: User = self.auth_service.verify_token(input_data.token)
 
-            # created_at はサーバー側で生成
-            created_at = datetime.utcnow().isoformat()
+            # --- ▼▼▼ ここからが修正点 ▼▼▼ ---
+            # タイムゾーンをJST（UTC+9）に設定
+            JST = timezone(timedelta(hours=+9), 'JST')
+            # created_at はサーバー側で日本時間(JST)で生成
+            created_at = datetime.now(JST).isoformat()
+            # --- ▲▲▲ ここまでが修正点 ▲▲▲ ---
 
             # Postエンティティを作成
             new_post = Post(
@@ -86,7 +90,7 @@ class CreatePostInteractor:
             # リポジトリで保存
             created_post = self.repo.create(new_post)
 
-            # Presenterに (Post, User) を渡す ← 修正点
+            # Presenterに (Post, User) を渡す
             output = self.presenter.output((created_post, user))
             return output, None
         except Exception as e:
