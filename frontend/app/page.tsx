@@ -21,6 +21,7 @@ export default async function HomePage() {
     }
   }
 
+  // fetchAllPostsの戻り値の型を、ApiPostWithUser[] に合わせます
   const posts = await fetchAllPosts();
 
   return (
@@ -28,9 +29,10 @@ export default async function HomePage() {
       <h1 className="text-xl font-bold p-4 border-b border-slate-700 sticky top-0 bg-black/80 backdrop-blur-sm">
         ホーム
       </h1>
-      {/* token と user を渡す */}
       <CreatePost token={token} user={user} />
-      <PostList posts={posts} />
+      {/* ★修正点: userとtokenをPostListに渡す */}
+      <PostList posts={posts} user={user} token={token} />
     </>
   );
 }
+
