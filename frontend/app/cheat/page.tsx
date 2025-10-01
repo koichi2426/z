@@ -20,7 +20,7 @@ export default function CheatPage() {
     setLoading(true);
     const promises = mockAccountsPostsJson.map(async (acc) => {
       try {
-        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/v1/auth/login', {
+  const res = await fetch('http://176.34.25.68:8000/v1/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: acc.email, password: acc.password }),
@@ -39,11 +39,12 @@ export default function CheatPage() {
     const tokenArr = await Promise.all(
       mockAccountsPostsJson.map(async (acc) => {
         try {
-          const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/v1/auth/login', {
+          const res = await fetch('http://176.34.25.68:8000/v1/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: acc.email, password: acc.password }),
           });
+          
           if (!res.ok) throw new Error('Login failed: ' + res.status);
           const data = await res.json();
           return data.token;
@@ -67,7 +68,7 @@ export default function CheatPage() {
       try {
         const results = [];
         for (const post of postsForRound) {
-          const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/v1/posts', {
+          const res = await fetch('http://176.34.25.68:8000/v1/posts', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -97,13 +98,13 @@ export default function CheatPage() {
       if (!token) return '未ログイン';
       try {
         // APIからユーザーごとの投稿を取得
-        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/v1/posts/username/${acc.username}`);
+  const res = await fetch(`http://176.34.25.68:8000/v1/posts/username/${acc.username}`);
         if (!res.ok) throw new Error('Fetch posts failed: ' + res.status);
         const posts = (await res.json()).posts;
         if (!posts || posts.length === 0) return '投稿なし';
         // 取得した投稿IDで全削除
         for (const post of posts) {
-          const delRes = await fetch(process.env.NEXT_PUBLIC_API_URL + `/v1/posts/${post.id}`, {
+          const delRes = await fetch(`http://176.34.25.68:8000/v1/posts/${post.id}`, {
             method: 'DELETE',
             headers: {
               Authorization: `Bearer ${token}`,
