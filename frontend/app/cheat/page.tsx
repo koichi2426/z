@@ -2,8 +2,8 @@
 'use client';
 
 import { useState } from 'react';
-import { login, LoginResponse } from '@/fetchs/auth';
-import { createPost, deletePost, fetchPostsByUsername } from '@/fetchs/posts';
+// import { login, LoginResponse } from '@/fetchs/auth';
+// import { createPost, deletePost, fetchPostsByUsername } from '@/fetchs/posts';
 
 import mockAccountsPostsJson from '@/lib/mock-accounts-posts.json';
 
@@ -15,13 +15,19 @@ export default function CheatPage() {
   const [tokens, setTokens] = useState<(string | null)[]>([null, null, null]);
   const [loading, setLoading] = useState(false);
 
-  // 一斉ログイン
+  // 一斉ログイン（直接API）
   const handleLoginAll = async () => {
     setLoading(true);
     const promises = mockAccountsPostsJson.map(async (acc) => {
       try {
-        const res: LoginResponse = await login(acc.email, acc.password);
-        return JSON.stringify(res, null, 2);
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: acc.email, password: acc.password }),
+        });
+        if (!res.ok) throw new Error('Login failed: ' + res.status);
+        const data = await res.json();
+        return JSON.stringify(data, null, 2);
       } catch (e) {
         return 'エラー: ' + String(e);
       }
@@ -33,8 +39,14 @@ export default function CheatPage() {
     const tokenArr = await Promise.all(
       mockAccountsPostsJson.map(async (acc) => {
         try {
-          const res: LoginResponse = await login(acc.email, acc.password);
-          return res.token;
+          const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: acc.email, password: acc.password }),
+          });
+          if (!res.ok) throw new Error('Login failed: ' + res.status);
+          const data = await res.json();
+          return data.token;
         } catch {
           return null;
         }
@@ -44,7 +56,7 @@ export default function CheatPage() {
     setLoading(false);
   };
 
-  // 個別一斉投稿（1回目/2回目/3回目）
+  // 個別一斉投稿（直接API）
   const handlePostRound = async (round: number) => {
     setLoading(true);
     const promises = mockAccountsPostsJson.map(async (acc, idx) => {
@@ -55,8 +67,17 @@ export default function CheatPage() {
       try {
         const results = [];
         for (const post of postsForRound) {
-          const res = await createPost({ content: post.content }, token);
-          results.push(JSON.stringify(res, null, 2));
+          const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/v1/posts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ content: post.content }),
+          });
+          if (!res.ok) throw new Error('Post failed: ' + res.status);
+          const data = await res.json();
+          results.push(JSON.stringify(data, null, 2));
         }
         return results.join('\n---\n');
       } catch (e) {
@@ -68,7 +89,7 @@ export default function CheatPage() {
     setLoading(false);
   };
 
-  // 一斉投稿全削除
+  // 一斉投稿全削除（直接API）
   const handleDeleteAllPosts = async () => {
     setLoading(true);
     const promises = mockAccountsPostsJson.map(async (acc, idx) => {
@@ -76,11 +97,19 @@ export default function CheatPage() {
       if (!token) return '未ログイン';
       try {
         // APIからユーザーごとの投稿を取得
-        const posts = await fetchPostsByUsername(acc.username);
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + `/v1/posts/username/${acc.username}`);
+        if (!res.ok) throw new Error('Fetch posts failed: ' + res.status);
+        const posts = (await res.json()).posts;
         if (!posts || posts.length === 0) return '投稿なし';
         // 取得した投稿IDで全削除
         for (const post of posts) {
-          await deletePost(post.id, token);
+          const delRes = await fetch(process.env.NEXT_PUBLIC_API_URL + `/v1/posts/${post.id}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!delRes.ok) throw new Error('Delete failed: ' + delRes.status);
         }
         return '全投稿削除完了';
       } catch (e) {
