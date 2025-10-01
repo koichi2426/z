@@ -1,0 +1,62 @@
+[
+  {
+    "label": "アカウントA",
+    "username": "userA",
+    "password": "passA",
+    "email": "userA@example.com",
+    "avatar_url": "",
+    "posts": [
+      [
+        { "content": "Aの投稿1-1" },
+        { "content": "Aの投稿1-2" }
+      ],
+      [
+        { "content": "Aの投稿2-1" },
+        { "content": "Aの投稿2-2" }
+      ],
+      [
+        { "content": "Aの投稿3-1" },
+        { "content": "Aの投稿3-2" }
+      ]
+    ]
+  },
+  {
+    "label": "アカウントB",
+    "username": "userB",
+    "password": "passB",
+    "email": "userB@example.com",
+    "avatar_url": "",
+    "posts": [
+      [
+        { "content": "Bの投稿1-1" }
+      ],
+      [
+        { "content": "Bの投稿2-1" }
+      ],
+      [
+        { "content": "Bの投稿3-1" }
+      ]
+    ]
+  },
+  {
+    "label": "アカウントC",
+    "username": "userC",
+    "password": "passC",
+    "email": "userC@example.com",
+    "avatar_url": "",
+    "posts": [
+      [
+        { "content": "Cの投稿1-1" },
+        { "content": "Cの投稿1-2" },
+        { "content": "Cの投稿1-3" }
+      ],
+      [
+        { "content": "Cの投稿2-1" }
+      ],
+      [
+        { "content": "Cの投稿3-1" },
+        { "content": "Cの投稿3-2" }
+      ]
+    ]
+  }
+]
